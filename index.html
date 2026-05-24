@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Endless Hand Wash & Professional Detailing — Howard Beach, NY</title>
+<meta name="description" content="Endless Hand Wash & Professional Detailing. Express detailing while you wait, inside CB Tire Shop in Howard Beach, NY. Hand wash starting at $30.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Yellowtail&family=Oswald:wght@300;400;500;600;700&family=Barlow:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<style>
+  :root{
+    --black:#0a0a0b;
+    --ink:#111114;
+    --panel:#16161a;
+    --gold:#d4af37;
+    --gold-lt:#f6e6a8;
+    --gold-dk:#8a6d1c;
+    --line:rgba(212,175,55,.22);
+    --txt:#e9e7e0;
+    --muted:#b4b1a7;
+    --foil:linear-gradient(118deg,#8a6d1c 0%,#d4af37 18%,#fff3c4 38%,#d4af37 52%,#b8860b 66%,#fbeeb6 82%,#a87f1f 100%);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--black);
+    color:var(--txt);
+    font-family:'Barlow',sans-serif;
+    line-height:1.6;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  /* grain overlay */
+  body::after{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .foil{
+    background:var(--foil);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    background-size:200% auto;
+  }
+  .script{font-family:'Yellowtail',cursive;font-weight:400}
+  .cond{font-family:'Oswald',sans-serif}
+  .eyebrow{
+    font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.42em;
+    font-weight:500;font-size:.72rem;color:var(--gold);
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:0 28px}
+
+  /* ---------- NAV ---------- */
+  nav{
+    position:fixed;top:0;left:0;right:0;z-index:1000;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 32px;
+    background:linear-gradient(180deg,rgba(10,10,11,.92),rgba(10,10,11,0));
+    backdrop-filter:blur(2px);transition:.4s;
+  }
+  nav.scrolled{
+    background:rgba(10,10,11,.96);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);padding:12px 32px;
+  }
+  .brand{display:flex;flex-direction:column;line-height:.85}
+  .brand .script{font-size:1.85rem}
+  .brand small{font-family:'Oswald',sans-serif;font-size:.55rem;letter-spacing:.34em;color:var(--muted);text-transform:uppercase;margin-top:3px}
+  .nav-links{display:flex;align-items:center;gap:34px}
+  .nav-links a{color:var(--txt);text-decoration:none;font-family:'Oswald',sans-serif;font-weight:300;text-transform:uppercase;letter-spacing:.16em;font-size:.8rem;transition:.25s}
+  .nav-links a:hover{color:var(--gold)}
+  .call-btn{
+    border:1px solid var(--gold);color:var(--gold);padding:9px 20px;border-radius:2px;
+    font-family:'Oswald',sans-serif;letter-spacing:.14em;font-size:.78rem;text-transform:uppercase;
+    transition:.3s;white-space:nowrap;
+  }
+  .call-btn:hover{background:var(--gold);color:#000 !important}
+
+  /* ---------- HERO ---------- */
+  header{
+    position:relative;min-height:100vh;display:flex;align-items:center;
+    padding:120px 0 60px;overflow:hidden;
+    background-color:#08080a;
+    background-image:radial-gradient(ellipse 120% 78% at 50% -10%,#1c1c22 0%,#0c0c0f 48%,#08080a 100%);
+  }
+  .beam{position:absolute;inset:0;z-index:0}
+  .beam::before{
+    content:"";position:absolute;top:-25%;left:50%;transform:translateX(-50%);
+    width:120%;height:75%;
+    background:radial-gradient(ellipse at center,rgba(212,175,55,.10),transparent 62%);
+    filter:blur(10px);
+  }
+  .beam::after{
+    content:"";position:absolute;inset:0;
+    background:
+      repeating-linear-gradient(100deg,transparent 0 90px,rgba(255,255,255,.012) 90px 92px),
+      radial-gradient(circle at 18% 120%,rgba(212,175,55,.10),transparent 45%),
+      radial-gradient(circle at 85% 0%,rgba(212,175,55,.08),transparent 40%);
+  }
+  /* faux detailing-bay ceiling lights */
+  .bay-lights{position:absolute;top:0;left:0;right:0;height:46%;z-index:0;opacity:.28;
+    background:
+      radial-gradient(60px 6px at 20% 14%,rgba(255,250,230,.35),transparent),
+      radial-gradient(60px 6px at 50% 9%,rgba(255,250,230,.30),transparent),
+      radial-gradient(60px 6px at 80% 14%,rgba(255,250,230,.35),transparent),
+      radial-gradient(50px 5px at 35% 24%,rgba(255,250,230,.22),transparent),
+      radial-gradient(50px 5px at 66% 24%,rgba(255,250,230,.22),transparent);
+    filter:blur(1px);
+  }
+  .scrim{position:absolute;inset:0;z-index:1;pointer-events:none;
+    background:radial-gradient(ellipse 90% 70% at 50% 50%,transparent 0%,rgba(8,8,10,.55) 100%);
+  }
+  .hero-inner{position:relative;z-index:2;width:100%;text-align:center}
+  .shield{width:46px;height:auto;margin:0 auto 24px;display:block;opacity:0;animation:rise .9s .1s forwards}
+  .hero h1{margin:6px 0}
+  .hero .script{font-size:clamp(4.2rem,15vw,11rem);line-height:.82;display:block;
+    filter:drop-shadow(0 3px 16px rgba(0,0,0,.75));opacity:0;animation:rise 1s .2s forwards}
+  .hero .sub{
+    font-family:'Oswald',sans-serif;font-weight:600;letter-spacing:.34em;text-transform:uppercase;
+    font-size:clamp(1.3rem,4.4vw,2.5rem);color:#fff;margin-top:4px;opacity:0;animation:rise 1s .35s forwards;
+    text-shadow:0 2px 14px rgba(0,0,0,.7);
+  }
+  .hero .tag{
+    font-family:'Oswald',sans-serif;font-weight:300;letter-spacing:.3em;text-transform:uppercase;
+    font-size:clamp(.7rem,2.2vw,.95rem);color:var(--gold);margin-top:14px;opacity:0;animation:rise 1s .5s forwards;
+  }
+  .divider{display:flex;align-items:center;justify-content:center;gap:14px;margin:30px 0 26px;opacity:0;animation:rise 1s .6s forwards}
+  .divider span{height:1px;width:60px;background:linear-gradient(90deg,transparent,var(--gold))}
+  .divider span:last-child{background:linear-gradient(90deg,var(--gold),transparent)}
+  .divider b{font-family:'Oswald',sans-serif;font-weight:400;color:var(--muted);letter-spacing:.3em;font-size:.7rem;text-transform:uppercase}
+  .hero-pitch{max-width:560px;margin:0 auto 34px;color:#cfccc2;font-size:1.05rem;opacity:0;animation:rise 1s .7s forwards;text-shadow:0 1px 8px rgba(0,0,0,.6)}
+  .hero-pitch b{color:var(--txt);font-weight:600}
+  .cta-row{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;opacity:0;animation:rise 1s .85s forwards}
+  .btn{
+    font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.16em;font-size:.9rem;
+    padding:16px 34px;border-radius:2px;text-decoration:none;transition:.3s;display:inline-flex;align-items:center;gap:10px;
+  }
+  .btn-gold{background:var(--foil);color:#1a1304;font-weight:600;background-size:200% auto}
+  .btn-gold:hover{background-position:right center;transform:translateY(-2px);box-shadow:0 14px 34px rgba(212,175,55,.28)}
+  .btn-ghost{border:1px solid var(--line);color:var(--txt)}
+  .btn-ghost:hover{border-color:var(--gold);color:var(--gold)}
+  .starting{margin-top:30px;font-family:'Oswald',sans-serif;letter-spacing:.2em;text-transform:uppercase;font-size:.78rem;color:var(--muted);opacity:0;animation:rise 1s 1s forwards}
+  .starting b{font-size:1.4rem;vertical-align:-2px}
+
+  @keyframes rise{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ---------- SECTION SHELL ---------- */
+  section{position:relative;padding:110px 0}
+  .sec-head{text-align:center;margin-bottom:64px}
+  .sec-head h2{font-family:'Oswald',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:.16em;
+    font-size:clamp(2rem,5vw,3.2rem);margin-top:10px;line-height:1}
+  .sec-head p{color:var(--muted);margin-top:14px;max-width:520px;margin-left:auto;margin-right:auto}
+
+  /* ---------- SERVICES ---------- */
+  #services{background:linear-gradient(180deg,var(--black),#0d0d0f)}
+  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+  .card{
+    position:relative;background:linear-gradient(165deg,var(--panel),#0c0c0e);
+    border:1px solid var(--line);border-radius:6px;padding:38px 26px 32px;
+    text-align:center;transition:.4s;overflow:hidden;
+  }
+  .card::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:var(--foil);opacity:.5;transition:.4s}
+  .card:hover{transform:translateY(-8px);border-color:rgba(212,175,55,.55);box-shadow:0 26px 50px rgba(0,0,0,.6)}
+  .card:hover::before{opacity:1}
+  .card.popular{border-color:rgba(212,175,55,.55);background:linear-gradient(165deg,#1c1813,#0c0c0e)}
+  .badge{
+    position:absolute;top:14px;right:-34px;transform:rotate(45deg);
+    background:var(--foil);color:#1a1304;font-family:'Oswald',sans-serif;font-weight:600;
+    font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;padding:5px 40px;
+  }
+  .icon{width:54px;height:54px;margin:0 auto 22px;color:var(--gold)}
+  .icon svg{width:100%;height:100%}
+  .card h3{font-family:'Oswald',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:.06em;font-size:1.45rem;color:#fff;line-height:1.05}
+  .tier-sub{font-family:'Oswald',sans-serif;font-weight:300;text-transform:uppercase;letter-spacing:.2em;font-size:.7rem;color:var(--gold);margin-top:8px}
+  .card .price{font-family:'Oswald',sans-serif;font-weight:700;font-size:2.7rem;margin:14px 0 4px;line-height:1}
+  .card .price small{font-size:1.1rem;vertical-align:super;font-weight:400}
+  .card .desc{color:var(--muted);font-size:.9rem;min-height:42px}
+  .card .pick{display:inline-block;margin-top:22px;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.14em;
+    font-size:.78rem;color:var(--gold);text-decoration:none;border-bottom:1px solid transparent;transition:.3s;padding-bottom:2px}
+  .card .pick:hover{border-color:var(--gold)}
+
+  /* ---------- WHY ---------- */
+  #why{background:#0d0d0f}
+  .why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:46px}
+  .why-item{text-align:center}
+  .why-item .wn{font-family:'Oswald',sans-serif;font-weight:300;font-size:2.6rem;line-height:1;margin-bottom:14px}
+  .why-item h4{font-family:'Oswald',sans-serif;font-weight:500;text-transform:uppercase;letter-spacing:.14em;font-size:1.05rem;margin-bottom:10px}
+  .why-item p{color:var(--muted);font-size:.95rem}
+
+  /* ---------- LOCATION ---------- */
+  #visit{background:linear-gradient(180deg,#0d0d0f,var(--black))}
+  .visit-grid{display:grid;grid-template-columns:1fr 1fr;gap:54px;align-items:center}
+  .info-block{margin-bottom:30px}
+  .info-block .eyebrow{display:block;margin-bottom:8px}
+  .info-block .big{font-family:'Oswald',sans-serif;font-weight:500;font-size:1.45rem;color:#fff;line-height:1.25}
+  .info-block .big a{color:#fff;text-decoration:none;transition:.3s}
+  .info-block .big a:hover{color:var(--gold)}
+  .info-block p{color:var(--muted)}
+  .map-card{
+    border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#0e0e12;
+    aspect-ratio:4/3;position:relative;display:flex;align-items:center;justify-content:center;
+    text-decoration:none;transition:.4s;
+  }
+  .map-card:hover{border-color:rgba(212,175,55,.55);box-shadow:0 22px 50px rgba(0,0,0,.55)}
+  .map-grid{position:absolute;inset:0;opacity:.5;
+    background:
+      radial-gradient(circle at 50% 46%,rgba(212,175,55,.16),transparent 55%),
+      repeating-linear-gradient(0deg,rgba(212,175,55,.07) 0 1px,transparent 1px 46px),
+      repeating-linear-gradient(90deg,rgba(212,175,55,.07) 0 1px,transparent 1px 46px),
+      linear-gradient(135deg,rgba(212,175,55,.10) 0 3px,transparent 3px 64px);
+  }
+  #leafmap{position:absolute;inset:0;width:100%;height:100%;z-index:1;display:none;background:#0e0e12}
+  .map-live #leafmap{display:block}
+  .map-live .map-fallback{display:none}
+  .leaflet-container{background:#0e0e12 !important;font-family:'Barlow',sans-serif}
+  .leaflet-control-attribution{background:rgba(10,10,11,.7) !important}
+  .leaflet-control-attribution,.leaflet-control-attribution a{color:#807d74 !important;font-size:9px !important}
+  .leaflet-bar a{background:#16161a !important;color:var(--gold) !important;border-color:var(--line) !important}
+  .gold-pin{filter:drop-shadow(0 4px 10px rgba(212,175,55,.5))}
+  .map-dir{
+    position:absolute;z-index:1000;bottom:16px;left:50%;transform:translateX(-50%);
+    font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.14em;font-size:.78rem;
+    color:#1a1304;background:var(--foil);padding:11px 22px;border-radius:3px;text-decoration:none;
+    box-shadow:0 8px 20px rgba(0,0,0,.55);transition:.3s;white-space:nowrap;
+  }
+  .map-dir:hover{transform:translateX(-50%) translateY(-2px)}
+  .map-fallback{position:relative;z-index:2;text-align:center;padding:24px}
+  .pin{width:46px;height:46px;display:block;margin:0 auto 16px;filter:drop-shadow(0 6px 16px rgba(212,175,55,.4));animation:bob 2.4s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+  .map-addr{font-family:'Oswald',sans-serif;font-weight:500;color:#fff;font-size:1.15rem;line-height:1.35;letter-spacing:.04em}
+  .map-btn{display:inline-block;margin-top:18px;font-family:'Oswald',sans-serif;text-transform:uppercase;
+    letter-spacing:.14em;font-size:.8rem;color:#1a1304;background:var(--foil);padding:11px 22px;border-radius:3px;transition:.3s}
+  .map-card:hover .map-btn{transform:translateY(-2px)}
+  .host-note{
+    margin-top:14px;display:inline-flex;align-items:center;gap:10px;border:1px dashed var(--line);
+    padding:12px 18px;border-radius:4px;color:var(--gold-lt);font-family:'Oswald',sans-serif;
+    letter-spacing:.08em;text-transform:uppercase;font-size:.78rem;
+  }
+
+  /* ---------- CTA STRIP ---------- */
+  .strip{
+    background:var(--foil);background-size:200% auto;text-align:center;padding:64px 24px;color:#16100a;
+  }
+  .strip h3{font-family:'Oswald',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:clamp(1.6rem,5vw,2.8rem);line-height:1}
+  .strip p{font-weight:500;margin:10px 0 26px;font-size:1.05rem}
+  .strip .phone{
+    display:inline-flex;align-items:center;gap:14px;background:#0a0a0b;color:var(--gold);
+    font-family:'Oswald',sans-serif;font-weight:600;letter-spacing:.1em;font-size:1.5rem;
+    padding:16px 38px;border-radius:3px;text-decoration:none;transition:.3s;
+  }
+  .strip .phone:hover{transform:translateY(-3px);box-shadow:0 16px 36px rgba(0,0,0,.4)}
+
+  /* ---------- FOOTER ---------- */
+  footer{background:var(--black);padding:60px 0 40px;border-top:1px solid var(--line);text-align:center}
+  footer .script{font-size:2.6rem;display:block}
+  footer small{font-family:'Oswald',sans-serif;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);font-size:.6rem}
+  .foot-row{display:flex;justify-content:center;gap:28px;flex-wrap:wrap;margin:26px 0 22px}
+  .foot-row a{color:var(--muted);text-decoration:none;font-family:'Oswald',sans-serif;letter-spacing:.12em;text-transform:uppercase;font-size:.78rem;transition:.3s}
+  .foot-row a:hover{color:var(--gold)}
+  .copy{color:#5c5a53;font-size:.78rem;letter-spacing:.04em}
+
+  /* ---------- REVEAL ---------- */
+  .reveal{opacity:0;transform:translateY(34px);transition:.8s cubic-bezier(.16,1,.3,1)}
+  .reveal.in{opacity:1;transform:none}
+
+  /* ---------- RESPONSIVE ---------- */
+  @media(max-width:900px){
+    .cards{grid-template-columns:repeat(2,1fr)}
+    .why-grid{grid-template-columns:1fr;gap:34px}
+    .visit-grid{grid-template-columns:1fr;gap:34px}
+    .nav-links a:not(.call-btn){display:none}
+  }
+  @media(max-width:560px){
+    .cards{grid-template-columns:1fr}
+    nav{padding:14px 20px}
+    .wrap{padding:0 20px}
+    section{padding:80px 0}
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="brand">
+    <span class="script foil">Endless</span>
+    <small>Hand Wash · Detailing</small>
+  </div>
+  <div class="nav-links">
+    <a href="#services">Services</a>
+    <a href="#why">Why Us</a>
+    <a href="#visit">Visit</a>
+    <a href="tel:+13473747555" class="call-btn">347-374-7555</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="beam"></div>
+  <div class="bay-lights"></div>
+  <div class="scrim"></div>
+  <div class="wrap hero-inner">
+    <svg class="shield" viewBox="0 0 48 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M24 2 4 9v17c0 14 10 22 20 28 10-6 20-14 20-28V9L24 2Z" stroke="#d4af37" stroke-width="1.5"/>
+      <path d="M24 16l2.6 5.8L33 23l-4.6 4.3L29.4 34 24 30.7 18.6 34l1-6.7L15 23l6.4-1.2L24 16Z" fill="#d4af37"/>
+    </svg>
+    <h1>
+      <span class="script foil">Endless</span>
+      <span class="sub">Hand Wash <span style="color:var(--gold);font-weight:300">&amp;</span> Professional Detailing</span>
+    </h1>
+    <div class="tag">Express Detailing · While You Wait</div>
+    <div class="divider"><span></span><b>Howard Beach, NY</b><span></span></div>
+    <p class="hero-pitch">Every vehicle washed <b>by hand</b> and finished with showroom-grade detailing — done right while you wait. Pull in at <b>CB Tire Shop</b> on Crossbay and drive out gleaming.</p>
+    <div class="cta-row">
+      <a href="tel:+13473747555" class="btn btn-gold">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg>
+        Call to Book
+      </a>
+      <a href="#services" class="btn btn-ghost">View Packages</a>
+    </div>
+    <div class="starting">Hand wash starting at <b class="foil">$30</b></div>
+  </div>
+</header>
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">Express Detailing Menu</span>
+      <h2>Pick Your <span class="foil">Finish</span></h2>
+      <p>Four levels of clean — from a quick exterior refresh to a full premium transformation. All by hand, all while you wait.</p>
+    </div>
+    <div class="cards">
+
+      <div class="card reveal">
+        <div class="icon">
+          <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 42l4-13a6 6 0 0 1 5.6-4h24.8A6 6 0 0 1 50 29l4 13"/>
+            <path d="M6 42h52v8a3 3 0 0 1-3 3h-4a3 3 0 0 1-3-3v-2H16v2a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3v-8Z"/>
+            <circle cx="16" cy="46" r="2"/><circle cx="48" cy="46" r="2"/>
+            <path d="M52 14l1.5 3.5L57 19l-3.5 1.5L52 24l-1.5-3.5L47 19l3.5-1.5L52 14Z"/>
+          </svg>
+        </div>
+        <h3>Silver</h3>
+        <div class="tier-sub">Exterior Clean</div>
+        <div class="price foil"><small>$</small>35</div>
+        <div class="desc">Hand wash, wheels, tires &amp; a streak-free dry. The classic shine.</div>
+        <a href="tel:+13473747555" class="pick">Book This →</a>
+      </div>
+
+      <div class="card reveal">
+        <div class="icon">
+          <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 50V28a8 8 0 0 1 8-8h6a8 8 0 0 1 8 8v22"/>
+            <path d="M14 50h32a4 4 0 0 0 4-4v-6a6 6 0 0 0-6-6H16a6 6 0 0 0-6 6v6a4 4 0 0 0 4 4Z"/>
+            <path d="M22 50v4M42 50v4"/>
+            <path d="M48 14l1.5 3.5L53 19l-3.5 1.5L48 24l-1.5-3.5L44 19l3.5-1.5L48 14Z"/>
+          </svg>
+        </div>
+        <h3>Gold</h3>
+        <div class="tier-sub">Interior Refresh</div>
+        <div class="price foil"><small>$</small>50</div>
+        <div class="desc">Vacuum, wipe-down, glass &amp; dash. A clean cabin, every detail.</div>
+        <a href="tel:+13473747555" class="pick">Book This →</a>
+      </div>
+
+      <div class="card popular reveal">
+        <div class="badge">Most Popular</div>
+        <div class="icon">
+          <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 40l4-13a6 6 0 0 1 5.6-4h28.8A6 6 0 0 1 52 27l4 13"/>
+            <path d="M4 40h56v8a3 3 0 0 1-3 3h-4a3 3 0 0 1-3-3v-2H14v2a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3v-8Z"/>
+            <circle cx="14" cy="44" r="2.4"/><circle cx="50" cy="44" r="2.4"/>
+            <path d="M30 8l1.8 4.2L36 14l-4.2 1.8L30 20l-1.8-4.2L24 14l4.2-1.8L30 8Z"/>
+            <path d="M50 12l1.2 2.8L54 16l-2.8 1.2L50 20l-1.2-2.8L46 16l2.8-1.2L50 12Z"/>
+          </svg>
+        </div>
+        <h3>Platinum</h3>
+        <div class="tier-sub">Full Detail</div>
+        <div class="price foil"><small>$</small>85</div>
+        <div class="desc">Inside &amp; out. Exterior wash plus a complete interior detail.</div>
+        <a href="tel:+13473747555" class="pick">Book This →</a>
+      </div>
+
+      <div class="card reveal">
+        <div class="icon">
+          <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 12h32l10 14-26 28L6 26 16 12Z"/>
+            <path d="M6 26h52M22 12l-6 14 16 28M42 12l6 14-16 28M26 12l6 14 6-14"/>
+          </svg>
+        </div>
+        <h3>Black Diamond</h3>
+        <div class="tier-sub">Premium Detail</div>
+        <div class="price foil"><small>$</small>140</div>
+        <div class="desc">The full treatment — deep clean, protect &amp; shine inside and out.</div>
+        <a href="tel:+13473747555" class="pick">Book This →</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- WHY -->
+<section id="why">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">The Endless Standard</span>
+      <h2>Why Drivers <span class="foil">Choose Us</span></h2>
+    </div>
+    <div class="why-grid">
+      <div class="why-item reveal">
+        <div class="wn foil">01</div>
+        <h4>Washed By Hand</h4>
+        <p>No harsh brushes, no swirl marks. Every panel is cleaned by hand the way your car deserves.</p>
+      </div>
+      <div class="why-item reveal">
+        <div class="wn foil">02</div>
+        <h4>While You Wait</h4>
+        <p>Express service that fits your day. Most details are done before you've finished your coffee.</p>
+      </div>
+      <div class="why-item reveal">
+        <div class="wn foil">03</div>
+        <h4>Two Jobs, One Stop</h4>
+        <p>Conveniently located inside CB Tire Shop — get your tires handled and your car detailed at once.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VISIT -->
+<section id="visit">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">Find Us</span>
+      <h2>Pull In <span class="foil">Today</span></h2>
+    </div>
+    <div class="visit-grid">
+      <div class="reveal">
+        <div class="info-block">
+          <span class="eyebrow">Location</span>
+          <div class="big"><a href="https://maps.google.com/?q=158-01+Crossbay+Blvd+Howard+Beach+NY+11414" target="_blank" rel="noopener">158-01 Crossbay Blvd<br>Howard Beach, NY 11414</a></div>
+          <span class="host-note">★ Inside CB Tire Shop · Ask Inside</span>
+        </div>
+        <div class="info-block">
+          <span class="eyebrow">Call or Text</span>
+          <div class="big"><a href="tel:+13473747555">347-374-7555</a></div>
+          <p>Booking, quotes &amp; fleet rates — give us a ring.</p>
+        </div>
+        <div class="info-block">
+          <span class="eyebrow">Hours</span>
+          <div class="big" style="font-size:1.15rem;color:var(--txt)">Open 7 Days · Walk-Ins Welcome</div>
+          <p style="font-size:.85rem">Replace with your exact hours before publishing.</p>
+        </div>
+      </div>
+      <div class="map-card reveal">
+        <div id="leafmap"></div>
+        <div class="map-grid"></div>
+        <div class="map-fallback">
+          <svg class="pin" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7Z" fill="#d4af37"/>
+            <circle cx="12" cy="9" r="2.6" fill="#0a0a0b"/>
+          </svg>
+          <div class="map-addr">158-01 Crossbay Blvd<br>Howard Beach, NY 11414</div>
+        </div>
+        <a class="map-dir" href="https://maps.google.com/?q=158-01+Crossbay+Blvd+Howard+Beach+NY+11414" target="_blank" rel="noopener">Get Directions →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA STRIP -->
+<div class="strip">
+  <h3>Your Car, Endlessly Clean.</h3>
+  <p>Exterior Clean · Interior Refresh · Full Detail Packages</p>
+  <a href="tel:+13473747555" class="phone">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg>
+    347-374-7555
+  </a>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <span class="script foil">Endless</span>
+    <small>Hand Wash &amp; Professional Detailing</small>
+    <div class="foot-row">
+      <a href="#services">Services</a>
+      <a href="#why">Why Us</a>
+      <a href="#visit">Visit</a>
+      <a href="tel:+13473747555">Call</a>
+    </div>
+    <p class="copy">158-01 Crossbay Blvd · Howard Beach, NY 11414 · Inside CB Tire Shop</p>
+    <p class="copy">© <span id="yr"></span> Endless Hand Wash. All rights reserved.</p>
+  </div>
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+  // year
+  document.getElementById('yr').textContent = new Date().getFullYear();
+  // nav scroll state
+  const nav = document.getElementById('nav');
+  addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 40));
+  // reveal on scroll
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e,i) => { if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+  }, {threshold:.12});
+  document.querySelectorAll('.reveal').forEach((el,i)=>{ el.style.transitionDelay=(i%4*90)+'ms'; io.observe(el); });
+
+  // ---- Interactive dark map w/ gold pin (falls back to styled panel if Leaflet/tiles fail) ----
+  (function(){
+    var LAT = 40.6607242, LNG = -73.8399077;
+    try {
+      if (typeof L === 'undefined') return;            // library blocked -> keep fallback
+      var card = document.querySelector('.map-card');
+      var map = L.map('leafmap', {
+        center:[LAT,LNG], zoom:15, scrollWheelZoom:false, attributionControl:true
+      });
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        subdomains:'abcd', maxZoom:20,
+        attribution:'&copy; OpenStreetMap &copy; CARTO'
+      }).addTo(map);
+      var goldPin = L.divIcon({
+        className:'gold-pin', iconSize:[34,46], iconAnchor:[17,46], popupAnchor:[0,-42],
+        html:'<svg width="34" height="46" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7Z" fill="#d4af37" stroke="#fff3c4" stroke-width="1"/><circle cx="12" cy="9" r="2.6" fill="#0a0a0b"/></svg>'
+      });
+      L.marker([LAT,LNG], {icon:goldPin}).addTo(map)
+        .bindPopup('<b>Endless Hand Wash</b><br>158-01 Crossbay Blvd<br>Inside CB Tire Shop');
+      card.classList.add('map-live');                  // success -> show map, hide panel
+      setTimeout(function(){ map.invalidateSize(); }, 250);
+    } catch(e){ /* anything goes wrong -> styled panel stays */ }
+  })();
+</script>
+</body>
+</html>
